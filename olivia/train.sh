@@ -17,7 +17,6 @@ CONFIG_NAME=main-core.yaml
 echo $CONFIG_NAME
 
 export APPTAINERENV_PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
-export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 
 apptainer exec --nv -B /cluster/work/projects/nn12017k/ -B /cluster/projects/nn12017k/ -B $PWD -B ${SQSH}:/user-software:image-src=/ ${SIF} \
     bash -c "source /user-software/bin/activate && python -m anemoi.training train --config-dir=$PWD --config-name=$CONFIG_NAME"
