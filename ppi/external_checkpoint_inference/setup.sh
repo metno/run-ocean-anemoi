@@ -11,7 +11,7 @@
 CHECKPOINT=<checkpoint> #insert checkpoint here
 
 source  /modules/rhel9/x86_64/mamba-mf3/etc/profile.d/ppimam.sh
-mamba activate /home/mateuszm/.conda/envs/h200-python-3.12.9 # I hope everyone has access to this. Need to it get correct python version. Let me know if there are problems, and I will think more. 
+mamba activate /lustre/storeB/project/fou/hi/foccus/python-envs/h200-python-3.12.9 # I hope everyone has access to this. Need to it get correct python version. Let me know if there are problems, and I will think more. 
 
 python3 -m venv $(pwd -P)/.venv
 
