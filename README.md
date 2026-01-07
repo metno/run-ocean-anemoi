@@ -1,5 +1,5 @@
 # Overview
-`run-amemoi` is a collection of utility scripts and packages to use anemoi-training (for ocean).
+`run-ocean-anemoi` is a collection of utility scripts and packages to use anemoi-training (for ocean).
 
 
 # Running Inference on PPI
