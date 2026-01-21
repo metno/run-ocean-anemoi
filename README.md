@@ -4,21 +4,38 @@
 
 # Running Inference on PPI
 
-1) First test access to the GPUs:
+The submit / que system for the PPI GPUs are different from the rest of PPI, it uses "Slurm". The only difference is that syntax inside the submit scripts are different, and that commands to interact with the jobs are different (but similar). 
+
+If you have never used the GPU, test your access by logging on to the GPU (interactive session):
 `srun -p gpuB-prod --account havbris  --gres=gpu:nvidia_h200_nvl:1 --mem=1G --time=00:05:00 --pty bash`
+then you should see that your prompt changes from the login node to a compute node. Ask for more than 5mins if you want to stay there and test things. 
+
+## Inference environment (`anemoi-inference`)
+To be able to produce results you need to run inference on a specific checkpoint. This checkpoint has been outputted during a training, that used a specific version of anemoi. The anemoi-version used in training MUST be compatible with the anemoi versions used for inference. We make sure that this is the case by using the checkpoint to specify the anemoi version in `setup.sh`. This script creates a virtual environment `.venv` in your current directory. 
+
+TLDR; you may re-use an environment for several checkpoints if they have been trained with same/similar anemoi versions. 
+
+## Work directory
+You may run inference on many checkpoints from many different experiments from the same directory, and specify the output directories for the nc-files as you wish. 
+
+## How to run inference: 
+
+1) Select where you want to run inference from.
 
 2) Clone the run scripts (if not already done):
 `git clone git@github.com:metno/run-ocean-anemoi.git`
+and
+`cd run-ocean-anemoi/ppi/external_checkpoint_inference`
 
-3) Provide the checkpoint to setup.sh and run the script with 
+4) If an env is not already available, create an env to use. Provide/change the checkpoint in `setup.sh` and run the script with 
 ```
 sbatch setup.sh
 ```
+where `sbatch` is the command to submit a script to the Slurm que. 
 This will take some time. The script isn't very efficient due to installing and reinstalling a bunch of packages. Might make it better later. 
 
-4) Add the checkpoint to `infer.yaml`. 
-May change graph and datasets.
-Specify the date and forecast duration.
+4) Add the checkpoint to `infer.yaml`. (It is also possible to change graph and datasets, but not neccecary).
+Specify the date and lead time/forecast duration, and the path and name of the output netcdf file. 
 
 6) Run 
 ```
