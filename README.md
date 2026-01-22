@@ -7,7 +7,7 @@
 The submit / que system for the PPI GPUs are different from the rest of PPI, it uses "Slurm". The only difference is that syntax inside the submit scripts are different, and that commands to interact with the jobs are different (but similar). 
 
 If you have never used the GPU, test your access by logging on to the GPU (interactive session):
-`srun -p gpuB-prod --account havbris  --gres=gpu:nvidia_h200_nvl:1 --mem=1G --time=00:05:00 --pty bash`
+`srun -p gpuB-research --account havbris  --gres=gpu:nvidia_h200_nvl:1 --mem=1G --time=00:05:00 --pty bash`
 then you should see that your prompt changes from the login node to a compute node. Ask for more than 5mins if you want to stay there and test things. 
 
 ## Inference environment (`anemoi-inference`)
