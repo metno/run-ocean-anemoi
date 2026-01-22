@@ -30,9 +30,10 @@ def GetFilenamesFromYaml(yml, extract_lam=False):
         run_id = re.findall(r'(?<=checkpoint\/).*(?=\/)', data['checkpoint'])[0][-5:]
         epoch = re.findall(r'(?<=epoch\_).*(?=\-)', data['checkpoint'])[0]
         step = re.findall(r'(?<=step\_).*(?=\.)', data['checkpoint'])[0]
+        lead_time = data['lead_time'] 
 
         orig_file_path = re.findall(r'.*(?<=\/)', orig_file)[0]
-        convention_filename = str(data['date'])+'_'+run_id+'_e'+epoch+'_s'+step+'.nc'
+        convention_filename = str(data['date'])+'_'+lead_time+'_'+run_id+'_e'+epoch+'_s'+step+'.nc'
 
         info_dict = {
             'orig_file':orig_file,
