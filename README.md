@@ -34,10 +34,11 @@ sbatch setup.sh
 where `sbatch` is the command to submit a script to the Slurm que. 
 This will take some time. The script isn't very efficient due to installing and reinstalling a bunch of packages. Might make it better later. 
 
-4) Add the checkpoint to `infer.yaml`. (It is also possible to change graph and datasets, but not neccecary).
-Specify the date and lead time/forecast duration, and the path and name of the output netcdf file. 
+4) Add the checkpoint to `infer.yaml`. (It is also possible to change graph and datasets, but not neccecary). Specify the date and lead time/forecast duration.
+No need to specify the path to the output file since the script `postpro-inference.py` will handle that automatically, renaming the file from `temp.nc` to:
+`<date>_<lead_time>_<run_id>_<epoch>_<step>.nc`
 
-6) Run 
+5) Run 
 ```
 sbatch ppi_infer.sh
 ```
