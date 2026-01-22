@@ -18,7 +18,7 @@ input:
     adjust: ["start", "end"]
 
 output:
-  netcdf: <output>
+  netcdf: <path-to-results>/temp.nc # the script postpro-inference.py will automatically rename and reshape this file
 
 # Or get only output on the lam area
 #output:

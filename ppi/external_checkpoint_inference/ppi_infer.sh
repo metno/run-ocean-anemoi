@@ -14,7 +14,6 @@ CONFIG_DIR=$(pwd -P)/
 CONFIG_NAME=$CONFIG_DIR/infer.yaml
 
 export HYDRA_FULL_ERROR=1
-export AIFS_BASE_SEED=1337420
 
 ulimit -v unlimited
 anemoi-inference run $CONFIG_NAME

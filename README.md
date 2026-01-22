@@ -7,7 +7,7 @@
 The submit / que system for the PPI GPUs are different from the rest of PPI, it uses "Slurm". The only difference is that syntax inside the submit scripts are different, and that commands to interact with the jobs are different (but similar). 
 
 If you have never used the GPU, test your access by logging on to the GPU (interactive session):
-`srun -p gpuB-prod --account havbris  --gres=gpu:nvidia_h200_nvl:1 --mem=1G --time=00:05:00 --pty bash`
+`srun -p gpuB-research --account havbris  --gres=gpu:nvidia_h200_nvl:1 --mem=1G --time=00:05:00 --pty bash`
 then you should see that your prompt changes from the login node to a compute node. Ask for more than 5mins if you want to stay there and test things. 
 
 ## Inference environment (`anemoi-inference`)
@@ -34,8 +34,11 @@ sbatch setup.sh
 where `sbatch` is the command to submit a script to the Slurm que. 
 This will take some time. The script isn't very efficient due to installing and reinstalling a bunch of packages. Might make it better later. 
 
-4) Add the checkpoint to `infer.yaml`. (It is also possible to change graph and datasets, but not neccecary).
-Specify the date and lead time/forecast duration, and the path and name of the output netcdf file. 
+4) Edit `infer.yaml`: specify the checkpoint, date, lead time/forecast duration and the path to the output directory for the netcdf-file.
+No need to specify the filename of the output file since the script `postpro-inference.py` will handle that automatically, renaming the file from `<path-to-results>/temp.nc` to:
+`<path-to-results>/<date>_<lead_time>_<run_id>_<epoch>_<step>.nc`
+
+(It is also possible to change graph and datasets, but not neccecary).
 
 6) Run 
 ```
