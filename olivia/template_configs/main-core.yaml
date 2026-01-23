@@ -294,9 +294,9 @@ training:
   #----------------------------
 
   max_epochs: null
-  max_steps: 5000
+  max_steps: 100000
   lr:
-    warmup: 500
+    warmup: 1000
     rate: 6.25e-5
     iterations: ${training.max_steps}
     min: 3e-7
