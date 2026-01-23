@@ -4,7 +4,7 @@ defaults:
 - datamodule: single
 - diagnostics: evaluation
 - hardware: slurm
-- graph: limited_area # --> we can create the graph in another step: uncomment this and only add minimum needed under 'graph'
+#- graph: limited_area 
 - model: graphtransformer
 #- training: lam 
 - override hydra/hydra_logging: disabled
