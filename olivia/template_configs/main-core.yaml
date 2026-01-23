@@ -6,7 +6,7 @@ defaults:
 - hardware: slurm
 - graph: limited_area # --> we can create the graph in another step: uncomment this and only add minimum needed under 'graph'
 - model: graphtransformer
-- training: lam 
+#- training: lam 
 - override hydra/hydra_logging: disabled
 - override hydra/job_logging: disabled
 - _self_
