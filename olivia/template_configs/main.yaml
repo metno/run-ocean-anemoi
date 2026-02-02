@@ -27,7 +27,7 @@ system:
   # Input paths
   input:
     dataset: null
-    graph: ./graphs/LAM-trimedge-10-res-12-scale12.pt
+    graph: /cluster/projects/nn12017k/graphs/LAM-trimedge-10-res-12-scale12.pt
     truncation: null
     truncation_inv: null
     loss_matrices_path: null
