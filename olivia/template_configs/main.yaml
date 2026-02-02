@@ -21,7 +21,7 @@ system:
   hardware:
     accelerator: auto
     num_gpus_per_node: 4
-    num_nodes: 4
+    num_nodes: 8
     num_gpus_per_model: 4  # Hybrid: 2 data-parallel replicas, each model sharded across 4 GPUs
 
   # Input paths
