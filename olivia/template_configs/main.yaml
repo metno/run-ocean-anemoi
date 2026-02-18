@@ -1,7 +1,7 @@
 defaults:
 - data: zarr
 - dataloader: native_grid
-- datamodule: single
+#- datamodule: single
 - diagnostics: evaluation
 - hardware: slurm
 - graph: limited_area # --> we can create the graph in another step: uncomment this and only add minimum needed under 'graph'
@@ -9,6 +9,7 @@ defaults:
 - training: lam 
 - override hydra/hydra_logging: disabled
 - override hydra/job_logging: disabled
+- override hydra/launcher: basic
 - _self_
 
 config_validation: True
@@ -17,6 +18,41 @@ hydra:
   output_subdir: null  
   run:  
     dir: .
+
+system:
+  # Hardware settings
+  hardware:
+    accelerator: auto
+    num_gpus_per_node: 4
+    num_nodes: 8
+    num_gpus_per_model: 4  # Hybrid: 2 data-parallel replicas, each model sharded across 4 GPUs
+
+  # Input paths
+  input:
+    dataset: 
+      dataset_main: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+      dataset_force: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+    graph: /cluster/projects/nn12017k/graphs/LAM-trimedge-10-res-12-scale12.pt
+    truncation: null
+    truncation_inv: null
+    loss_matrices_path: null
+    warm_start: null
+
+  # Output structure
+  output:
+    root: /cluster/projects/nn12017k/experiments/<replace-me>/
+    logs:
+      root: logs
+      wandb: wandb
+      mlflow: mlflow
+      tensorboard: tensorboard
+    checkpoints:
+      root: checkpoint
+      every_n_epochs: anemoi-by_epoch-epoch_{epoch:03d}-step_{step:06d}
+      every_n_train_steps: anemoi-by_step-epoch_{epoch:03d}-step_{step:06d}
+      every_n_minutes: anemoi-by_time-epoch_{epoch:03d}-step_{step:06d}
+    plots: plots
+    profiler: profiler
 
 data:
   frequency: 3h
@@ -42,6 +78,7 @@ data:
   - sin_local_time
   - sin_longitude
   - sea_mask
+  - zeta
 
   diagnostic: []
     
@@ -56,12 +93,6 @@ data:
         - u_eastward_0
         - v_northward_0
         - zeta
-        # Mean:
-        # salinity_0 34.2275
-        # temperature_0 8.85046375
-        # u_eastward_0 0.0181013125
-        # v_northward_0 0.013216155
-        # zeta -0.22607975000000002
   
     normalizer:
       _target_: anemoi.models.preprocessing.normalizer.InputNormalizer
