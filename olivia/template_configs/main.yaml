@@ -229,7 +229,6 @@ model:
     attribute_name: cutout_mask
 
 training:
-  # This supposedly fixes LUMI memory bug affecting loss
   precision: bf16-mixed
   
   # This section is to avoid using variable_loss_scaling 
@@ -239,6 +238,37 @@ training:
     # Scalers to include in loss calculation
     scalers: ['general_variable', 'nan_mask_weights', 'node_weights']
     ignore_nans: False
+  
+  scalers:
+    # Same as scalers/lam.yaml, except not adding stdev_tendency and var_tendency
+    general_variable:
+      _target_: anemoi.training.losses.scalers.GeneralVariableLossScaler
+      weights:
+        default: 1
+    
+    nan_mask_weights:
+      _target_: anemoi.training.losses.scalers.NaNMaskScaler
+    
+    node_weights:
+      _target_: anemoi.training.losses.scalers.GraphNodeAttributeScaler
+      nodes_name: ${graph.data}
+      nodes_attribute_name: area_weight
+      norm: "unit-sum"
+    
+    limited_area_mask:
+      _target_: anemoi.training.losses.scalers.GraphNodeAttributeScaler
+      nodes_name: ${graph.data}
+      nodes_attribute_name: cutout_mask
+      norm: null
+
+  validation_metrics:
+    mse_inside_lam:
+      _target_: anemoi.training.losses.MSELoss
+      scalers: ["node_weights"]
+      ignore_nans: True
+  variable_groups:
+    default: sfc
+
   
   metrics: # this used to list only a few variables
   - 'all'  
@@ -250,10 +280,10 @@ training:
   load_weights_only: False #loads entire model if False, loads only weights if True
   
   max_epochs: null
-  max_steps: 50000
+  max_steps: 100000
   lr:
     warmup: 1000 # number of warmup iterations
-    rate: 6.25e-5 #local_lr
+    rate: 6.25e-4 #local_lr
     iterations: ${training.max_steps} # NOTE: When max_epochs < max_steps, scheduler will run for max_steps
     min: 3e-7 #Not scaled by #GPU
 
