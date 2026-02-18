@@ -1,188 +1,140 @@
 defaults:
 - data: zarr
 - dataloader: native_grid
+- datamodule: single
 - diagnostics: evaluation
-- graph: limited_area
+- hardware: slurm
+- graph: limited_area # --> we can create the graph in another step: uncomment this and only add minimum needed under 'graph'
 - model: graphtransformer
-#- training: lam
+- training: lam 
 - override hydra/hydra_logging: disabled
 - override hydra/job_logging: disabled
-- override hydra/launcher: basic
 - _self_
 
 config_validation: True
 
-# ============================================================================
-# SYSTEM SETTINGS - 8 NODES, 32 GPUS TOTAL
-# 8 model replicas (1 per node), each model split across 4 GPUs
-# ============================================================================
-system:
-  # Hardware settings
-  hardware:
-    accelerator: auto
-    num_gpus_per_node: 4
-    num_nodes: 8
-    num_gpus_per_model: 4  # Hybrid: 2 data-parallel replicas, each model sharded across 4 GPUs
+hydra:  
+  output_subdir: null  
+  run:  
+    dir: .
 
-  # Input paths
-  input:
-    dataset: null
-    graph: /cluster/projects/nn12017k/graphs/LAM-trimedge-10-res-12-scale12.pt
-    truncation: null
-    truncation_inv: null
-    loss_matrices_path: null
-    warm_start: null
-
-  # Output structure
-  output:
-    root: ./outputs/
-    logs:
-      root: logs
-      wandb: wandb
-      mlflow: mlflow
-      tensorboard: tensorboard
-    checkpoints:
-      root: checkpoint
-      every_n_epochs: anemoi-by_epoch-epoch_{epoch:03d}-step_{step:06d}
-      every_n_train_steps: anemoi-by_step-epoch_{epoch:03d}-step_{step:06d}
-      every_n_minutes: anemoi-by_time-epoch_{epoch:03d}-step_{step:06d}
-    plots: plots
-    profiler: profiler
-
-# ============================================================================
-# DATA SETTINGS
-# ============================================================================
 data:
   frequency: 3h
   timestep: 3h
   forcing:
   - h
-  - Pair
-  - Qair
-  - Tair
+  - Pair             
+  - Qair             
+  - Tair   
   - Uwind
-  - Vwind
-  - cos_julian_day
-  - cos_latitude
-  - cos_local_time
-  - cos_longitude
-  - f
-  - insolation
-  - rain
+  - Vwind              
+  #- cloud # available from 2017       
+  - cos_julian_day   
+  - cos_latitude     
+  - cos_local_time   
+  - cos_longitude    
+  - f                
+  - insolation       
+  - rain             
   - river_binary_mask
-  - sin_julian_day
-  - sin_latitude
+  - sin_julian_day   
+  - sin_latitude   
   - sin_local_time
   - sin_longitude
   - sea_mask
-  - zeta
 
   diagnostic: []
-
+    
   processors:
     imputer:
       _target_: anemoi.models.preprocessing.imputer.InputImputer
-      config:
+      config: 
         default: "none"
-        mean:
+        mean:  
         - salinity_0
         - temperature_0
         - u_eastward_0
         - v_northward_0
         - zeta
-
+        # Mean:
+        # salinity_0 34.2275
+        # temperature_0 8.85046375
+        # u_eastward_0 0.0181013125
+        # v_northward_0 0.013216155
+        # zeta -0.22607975000000002
+  
     normalizer:
       _target_: anemoi.models.preprocessing.normalizer.InputNormalizer
+
       config:
         default: "mean-std"
         std: []
         min-max:
         - salinity_0
-        max:
+        max: # Data is normalised by dividing by the max value (, so the ‘zero’ point and the proportional distance from this point is retained)
         - h
         none:
-        - cos_julian_day
-        - cos_latitude
-        - cos_local_time
-        - cos_longitude
-        - insolation
-        - sin_julian_day
-        - sin_latitude
+        - cos_julian_day   
+        - cos_latitude     
+        - cos_local_time   
+        - cos_longitude  
+        - insolation           
+        - sin_julian_day   
+        - sin_latitude   
         - sin_local_time
         - sin_longitude
+        #- cloud # available from 2017
         - river_binary_mask
         - sea_mask
-
-# ============================================================================
-# DATALOADER SETTINGS
-# ============================================================================
+      
 dataloader:
   num_workers:
     training: 2
     validation: 2
     test: 2
-  batch_size:
-    training: 1
+  batch_size: 
+    training: 1 # has to be 1 for model-paralell
     validation: 1
     test: 1
-  read_group_size: 4
 
   limit_batches:
     training: null
     validation: null
-    test: 20
-
+    test: 20 
+  
+  dataset:
+    join:
+      - dataset: ${hardware.paths.data}/${hardware.files.dataset.dataset_main}
+        frequency: ${data.frequency}
+      - dataset: ${hardware.paths.data}/${hardware.files.dataset.dataset_force}
+        frequency: ${data.frequency}
+    adjust: ["start", "end"]
   grid_indices:
     _target_: anemoi.training.data.grid_indices.MaskedGrid
     nodes_name: data
     node_attribute_name: indices_connected_nodes
 
   training:
-    dataset:
-      join:
-        - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-          frequency: ${data.frequency}
-        - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
-          frequency: ${data.frequency}
-      adjust: ["start", "end"]
-    frequency: ${data.frequency}
+    dataset: ${dataloader.dataset} 
     start: 2012-01-01
     end: 2022-06-30
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
-  validation_rollout: 1
+  validation_rollout: 1 # TODO change later
 
   validation:
-    dataset:
-      join:
-        - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-          frequency: ${data.frequency}
-        - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
-          frequency: ${data.frequency}
-      adjust: ["start", "end"]
-    frequency: ${data.frequency}
+    dataset: ${dataloader.dataset}
     start: 2022-07-01
     end: 2023-09-30
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
-
   test:
-    dataset:
-      join:
-        - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-          frequency: ${data.frequency}
-        - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
-          frequency: ${data.frequency}
-      adjust: ["start", "end"]
-    frequency: ${data.frequency}
+    dataset: ${dataloader.dataset}
     start: 2023-10-01
     end: 2024-12-31
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
-# ============================================================================
-# DIAGNOSTICS
-# ============================================================================
 diagnostics:
-  plot:
+  plot: 
     callbacks: []
   log:
     mlflow:
@@ -191,147 +143,98 @@ diagnostics:
       authentication: True
       tracking_uri: https://mlflow.ecmwf.int
       experiment_name: 'metno-fou'
-      run_name: <run name>
-    wandb:
+      run_name: '<replace-me>' #change this
+    wandb: 
       entity: null
   print_memory_summary: True
   checkpoint:
     every_n_minutes:
-      save_frequency: 30
-      num_models_saved: 3
-
+      save_frequency: 30 # Approximate, as this is checked at the end of training steps
+      num_models_saved: 3 # If set to k, saves the 'last' k model weights in the training.
+  
     every_n_epochs:
       save_frequency: 1
-      num_models_saved: -1
-
+      num_models_saved: -1 # If set to -1, all checkpoints are kept ensuring runs can be continued/forked at any point in the training process
+  
     every_n_train_steps:
-      save_frequency: 1000
+      save_frequency: 1000 # Does not scale with rollout
       num_models_saved: 5
 
-# ============================================================================
-# GRAPH
-# ============================================================================
-graph:
-  overwrite: False
+hardware:
+  paths:
+    data: /cluster/work/projects/nn12017k/datasets2/
+    output: /cluster/projects/nn12017k/experiments/<replace-me>/
+    graph: /cluster/projects/nn12017k/graphs/
+  files:
+    dataset:
+      dataset_main: norkystv3_hindcast_2012-2024.zarr
+      dataset_force: forcing_norkystv3_hindcast_2012-2024.zarr  # Enable this for longer training. Then exclude cloud.
+    graph: LAM-trimedge-10-res-12-scale12.pt 
+    warm_start: null #specific checkpoint to start from, defaults to last.ckpt
 
-# ============================================================================
-# MODEL
-# ============================================================================
-model:
-  num_channels: 512
+  num_gpus_per_node: 1 # we have to specify this here
+  num_nodes: 1
+  num_gpus_per_model: 1 # TODO: 8 better? This is so-called "model-paralell"
+
+graph:
+  overwrite: False # only create/re-generate the graph with True
+
+model: 
+  num_channels: 256 #1024 #TODO: this number dont have to be so large when have few vars, use higher nr when have more layers vars. Test to see if higher than 256 gives added value. Or higher when have less mesh points (remove land)
+  # ------
+  # these lines will become the new default in graphtransformer.yaml
   keep_batch_sharded: False
   encoder:
     num_chunks: 1
     shard_strategy: "heads"
-    graph_attention_backend: "pyg"
   decoder:
     num_chunks: 1
     shard_strategy: "heads"
-    graph_attention_backend: "pyg"
-  processor:
-    graph_attention_backend: "pyg"
+  #-------
   trainable_parameters:
     data: 0
     hidden: 0
     data2hidden: 0
     hidden2data: 0
-    hidden2hidden: 0
-  bounding:
+    hidden2hidden: 0 # GNN and GraphTransformer Processor only
+  bounding: #These are applied in order
     - _target_: anemoi.models.layers.bounding.ReluBounding
-      variables: []
-  output_mask:
+      variables: [] #[salinity_0]
+    #- _target_: anemoi.models.layers.bounding.NormalizedReluBounding
+    #  variables: [temperature_0]
+    #  min_val: [-2]
+    #  normalizer: ['mean-std']
+  output_mask: # suggested by lam.yaml
     _target_: anemoi.training.utils.masks.Boolean1DMask
     nodes_name: ${graph.data}
     attribute_name: cutout_mask
 
-# ============================================================================
-# TRAINING - adding all from lam.yaml "manually" to turn off tendency scalers
-# ============================================================================
 training:
-  run_id: null
-  fork_run_id: null
-  transfer_learning: False 
-  load_weights_only: False
-
-  deterministic: False
-
-  precision: bf16-mixed # try default: 16-mixed
-
-  #----------------------------
-  # Using defaults from lam.yaml
-  multistep_input: 2
-  accum_grad_batches: 1
-  num_sanity_val_steps: 6
-  gradient_clip:
-    val: 32.
-    algorithm: value
-  swa:
-    enabled: False
-    lr: 1.e-4
-  optimizer:
-    _target_: torch.optim.AdamW
-    betas: [0.9, 0.95]
-  model_task: anemoi.training.train.tasks.GraphForecaster
-  strategy:
-    _target_: anemoi.training.distributed.strategy.DDPGroupStrategy
-    num_gpus_per_model: ${system.hardware.num_gpus_per_model}
-    read_group_size: ${dataloader.read_group_size}
-  loss_gradient_scaling: False
-  #----------------------------
-
+  # This supposedly fixes LUMI memory bug affecting loss
+  precision: bf16-mixed
+  
+  # This section is to avoid using variable_loss_scaling 
   training_loss:
+    # loss class to initialise
     _target_: anemoi.training.losses.MSELoss
+    # Scalers to include in loss calculation
     scalers: ['general_variable', 'nan_mask_weights', 'node_weights']
     ignore_nans: False
+  
+  metrics: # this used to list only a few variables
+  - 'all'  
 
-  scalers:
-    # Same as scalers/lam.yaml, except not adding stdev_tendency and var_tendency
-    general_variable:
-      _target_: anemoi.training.losses.scalers.GeneralVariableLossScaler
-      weights:
-        default: 1
-    
-    nan_mask_weights:
-      _target_: anemoi.training.losses.scalers.NaNMaskScaler
-    
-    node_weights:
-      _target_: anemoi.training.losses.scalers.GraphNodeAttributeScaler
-      nodes_name: ${graph.data}
-      nodes_attribute_name: area_weight
-      norm: "unit-sum"
-    
-    limited_area_mask:
-      _target_: anemoi.training.losses.scalers.GraphNodeAttributeScaler
-      nodes_name: ${graph.data}
-      nodes_attribute_name: cutout_mask
-      norm: null
+  #TODO rollout is here
 
-  validation_metrics:
-    mse_inside_lam:
-      _target_: anemoi.training.losses.MSELoss
-      scalers: ["node_weights"]
-      ignore_nans: True
-  variable_groups:
-    default: sfc
-    # pressure levels removed
-
-  metrics:
-  - 'all' 
-
-  #----------------------------
-  # Using defaults from lam.yaml
-  rollout:
-    start: 1
-    epoch_increment: 0
-    max: 1
-  submodules_to_freeze: []
-  recompile_limit: 32
-  #----------------------------
-
+  run_id: null # checkpoint id for the experiment in with output_base as root, null for random name, =fork_run_id to continue training in the same folder.
+  fork_run_id: null #path to the experiment to fork from with output_base as root
+  load_weights_only: False #loads entire model if False, loads only weights if True
+  
   max_epochs: null
-  max_steps: 100000
+  max_steps: 50000
   lr:
-    warmup: 1000
-    rate: 6.25e-4
-    iterations: ${training.max_steps}
-    min: 3e-7
+    warmup: 1000 # number of warmup iterations
+    rate: 6.25e-5 #local_lr
+    iterations: ${training.max_steps} # NOTE: When max_epochs < max_steps, scheduler will run for max_steps
+    min: 3e-7 #Not scaled by #GPU
+
