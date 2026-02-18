@@ -147,7 +147,7 @@ dataloader:
       adjust: ["start", "end"]
     frequency: ${data.frequency}
     start: 2012-01-01
-    end: 2022-11-30
+    end: 2022-12-15
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
   validation_rollout: 1 # TODO change later
@@ -161,8 +161,8 @@ dataloader:
         frequency: ${data.frequency}
       adjust: ["start", "end"]
     frequency: ${data.frequency}
-    start: 2022-12-01
-    end: 2023-11-30
+    start: 2022-12-16
+    end: 2023-12-15
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
   test:
@@ -174,7 +174,7 @@ dataloader:
         frequency: ${data.frequency}
       adjust: ["start", "end"]
     frequency: ${data.frequency}
-    start: 2023-12-01
+    start: 2023-12-16
     end: 2024-12-31
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
