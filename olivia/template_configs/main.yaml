@@ -147,7 +147,6 @@ dataloader:
       adjust: ["start", "end"]
     frequency: ${data.frequency}
     start: 2012-01-01
-    #end: 2022-12-31
     end: 2022-06-30
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
@@ -162,8 +161,7 @@ dataloader:
         frequency: ${data.frequency}
       adjust: ["start", "end"]
     frequency: ${data.frequency}
-    start: 2023-01-01
-    #end: 2023-12-31
+    start: 2022-07-01
     end: 2023-09-30
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
@@ -176,8 +174,7 @@ dataloader:
         frequency: ${data.frequency}
       adjust: ["start", "end"]
     frequency: ${data.frequency}
-    start: 2024-01-01
-    #end: 2024-12-31
+    start: 2023-10-01
     end: 2024-12-31
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
@@ -212,7 +209,7 @@ graph:
   overwrite: False # only create/re-generate the graph with True
 
 model: 
-  num_channels: 768 #1024 #TODO: this number dont have to be so large when have few vars, use higher nr when have more layers vars. Test to see if higher than 256 gives added value. Or higher when have less mesh points (remove land)
+  num_channels: 256 #1024 #TODO: this number dont have to be so large when have few vars, use higher nr when have more layers vars. Test to see if higher than 256 gives added value. Or higher when have less mesh points (remove land)
   keep_batch_sharded: False
   encoder:
     num_chunks: 1
