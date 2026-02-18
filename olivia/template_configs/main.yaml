@@ -124,9 +124,10 @@ dataloader:
     validation: 2
     test: 2
   batch_size: 
-    training: 1 # has to be 1 for model-paralell
+    training: 1 
     validation: 1
     test: 1
+  read_group_size: 4
 
   limit_batches:
     training: null
