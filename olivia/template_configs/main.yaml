@@ -197,16 +197,18 @@ graph:
   overwrite: False # only create/re-generate the graph with True
 
 model: 
-  num_channels: 256 #1024 #TODO: this number dont have to be so large when have few vars, use higher nr when have more layers vars. Test to see if higher than 256 gives added value. Or higher when have less mesh points (remove land)
-  # ------
-  # these lines will become the new default in graphtransformer.yaml
+  num_channels: 768 #1024 #TODO: this number dont have to be so large when have few vars, use higher nr when have more layers vars. Test to see if higher than 256 gives added value. Or higher when have less mesh points (remove land)
   keep_batch_sharded: False
   encoder:
     num_chunks: 1
     shard_strategy: "heads"
+    graph_attention_backend: "pyg"
   decoder:
     num_chunks: 1
     shard_strategy: "heads"
+    graph_attention_backend: "pyg"
+  processor:
+    graph_attention_backend: "pyg"
   #-------
   trainable_parameters:
     data: 0
