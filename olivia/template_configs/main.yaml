@@ -124,13 +124,13 @@ dataloader:
     validation: null
     test: 20 
   
-  #dataset:
-  #  join:
-  #    - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-  #      frequency: ${data.frequency}
-  #    - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
-  #      frequency: ${data.frequency}
-  #  adjust: ["start", "end"]
+  dataset:
+    join:
+      - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+        frequency: ${data.frequency}
+      - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+        frequency: ${data.frequency}
+    adjust: ["start", "end"]
 
   grid_indices:
     _target_: anemoi.training.data.grid_indices.MaskedGrid
@@ -138,13 +138,7 @@ dataloader:
     node_attribute_name: indices_connected_nodes
 
   training:
-    dataset:
-      join:
-        - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-          frequency: ${data.frequency}
-        - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
-          frequency: ${data.frequency}
-      adjust: ["start", "end"]
+    dataset: ${dataloader.dataset}
     frequency: ${data.frequency}
     start: 2012-01-01
     end: 2022-06-30
@@ -153,26 +147,14 @@ dataloader:
   validation_rollout: 1 # TODO change later
 
   validation:
-    dataset:
-      join:
-      - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-        frequency: ${data.frequency}
-      - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
-        frequency: ${data.frequency}
-      adjust: ["start", "end"]
+    dataset: ${dataloader.dataset}
     frequency: ${data.frequency}
     start: 2022-07-01
     end: 2023-09-30
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
   test:
-    dataset: 
-      join:
-      - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-        frequency: ${data.frequency}
-      - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
-        frequency: ${data.frequency}
-      adjust: ["start", "end"]
+    dataset: ${dataloader.dataset}
     frequency: ${data.frequency}
     start: 2023-10-01
     end: 2024-12-31
