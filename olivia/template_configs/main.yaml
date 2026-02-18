@@ -3,7 +3,6 @@ defaults:
 - dataloader: native_grid
 #- datamodule: single
 - diagnostics: evaluation
-- hardware: slurm
 - graph: limited_area # --> we can create the graph in another step: uncomment this and only add minimum needed under 'graph'
 - model: graphtransformer
 #- training: lam 
