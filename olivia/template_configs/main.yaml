@@ -1,22 +1,15 @@
 defaults:
 - data: zarr
 - dataloader: native_grid
-#- datamodule: single
 - diagnostics: evaluation
 - graph: limited_area # --> we can create the graph in another step: uncomment this and only add minimum needed under 'graph'
 - model: graphtransformer
-#- training: lam 
 - override hydra/hydra_logging: disabled
 - override hydra/job_logging: disabled
 - override hydra/launcher: basic
 - _self_
 
 config_validation: True
-
-hydra:  
-  output_subdir: null  
-  run:  
-    dir: .
 
 system:
   # Hardware settings
@@ -28,9 +21,10 @@ system:
 
   # Input paths
   input:
-    dataset: 
-      dataset_main: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-      dataset_force: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+    dataset: null
+    #dataset:
+      #dataset_main: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+      #dataset_force: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
     graph: /cluster/projects/nn12017k/graphs/LAM-trimedge-10-res-12-scale12.pt
     truncation: null
     truncation_inv: null
@@ -58,62 +52,59 @@ data:
   timestep: 3h
   forcing:
   - h
-  - Pair             
-  - Qair             
-  - Tair   
+  - Pair
+  - Qair
+  - Tair
   - Uwind
-  - Vwind              
-  #- cloud # available from 2017       
-  - cos_julian_day   
-  - cos_latitude     
-  - cos_local_time   
-  - cos_longitude    
-  - f                
-  - insolation       
-  - rain             
+  - Vwind
+  - cos_julian_day
+  - cos_latitude
+  - cos_local_time
+  - cos_longitude
+  - f
+  - insolation
+  - rain
   - river_binary_mask
-  - sin_julian_day   
-  - sin_latitude   
+  - sin_julian_day
+  - sin_latitude
   - sin_local_time
   - sin_longitude
   - sea_mask
   - zeta
 
   diagnostic: []
-    
+
   processors:
     imputer:
       _target_: anemoi.models.preprocessing.imputer.InputImputer
-      config: 
+      config:
         default: "none"
-        mean:  
+        mean:
         - salinity_0
         - temperature_0
         - u_eastward_0
         - v_northward_0
         - zeta
-  
+
     normalizer:
       _target_: anemoi.models.preprocessing.normalizer.InputNormalizer
-
       config:
         default: "mean-std"
         std: []
         min-max:
         - salinity_0
-        max: # Data is normalised by dividing by the max value (, so the ‘zero’ point and the proportional distance from this point is retained)
+        max:
         - h
         none:
-        - cos_julian_day   
-        - cos_latitude     
-        - cos_local_time   
-        - cos_longitude  
-        - insolation           
-        - sin_julian_day   
-        - sin_latitude   
+        - cos_julian_day
+        - cos_latitude
+        - cos_local_time
+        - cos_longitude
+        - insolation
+        - sin_julian_day
+        - sin_latitude
         - sin_local_time
         - sin_longitude
-        #- cloud # available from 2017
         - river_binary_mask
         - sea_mask
       
@@ -133,13 +124,13 @@ dataloader:
     validation: null
     test: 20 
   
-  dataset:
-    join:
-      - dataset: ${system.input.dataset.dataset_main}
-        frequency: ${data.frequency}
-      - dataset: ${system.input.dataset.dataset_force}
-        frequency: ${data.frequency}
-    adjust: ["start", "end"]
+  #dataset:
+  #  join:
+  #    - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+  #      frequency: ${data.frequency}
+  #    - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+  #      frequency: ${data.frequency}
+  #  adjust: ["start", "end"]
 
   grid_indices:
     _target_: anemoi.training.data.grid_indices.MaskedGrid
@@ -147,7 +138,14 @@ dataloader:
     node_attribute_name: indices_connected_nodes
 
   training:
-    dataset: ${dataloader.dataset} 
+    dataset:
+      join:
+        - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+          frequency: ${data.frequency}
+        - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+          frequency: ${data.frequency}
+      adjust: ["start", "end"]
+    frequency: ${data.frequency}
     start: 2012-01-01
     end: 2022-12-31
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
@@ -155,12 +153,27 @@ dataloader:
   validation_rollout: 1 # TODO change later
 
   validation:
-    dataset: ${dataloader.dataset}
+    dataset:
+      join:
+      - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+        frequency: ${data.frequency}
+      - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+        frequency: ${data.frequency}
+      adjust: ["start", "end"]
+    frequency: ${data.frequency}
     start: 2023-01-01
     end: 2023-12-31
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
+
   test:
-    dataset: ${dataloader.dataset}
+    dataset: 
+      join:
+      - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+        frequency: ${data.frequency}
+      - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+        frequency: ${data.frequency}
+      adjust: ["start", "end"]
+    frequency: ${data.frequency}
     start: 2024-01-01
     end: 2024-12-31
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
