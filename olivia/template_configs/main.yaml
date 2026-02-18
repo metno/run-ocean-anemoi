@@ -136,11 +136,12 @@ dataloader:
   
   dataset:
     join:
-      - dataset: ${hardware.paths.data}/${hardware.files.dataset.dataset_main}
+      - dataset: ${system.input.dataset.dataset_main}
         frequency: ${data.frequency}
-      - dataset: ${hardware.paths.data}/${hardware.files.dataset.dataset_force}
+      - dataset: ${system.input.dataset.dataset_force}
         frequency: ${data.frequency}
     adjust: ["start", "end"]
+    
   grid_indices:
     _target_: anemoi.training.data.grid_indices.MaskedGrid
     nodes_name: data
