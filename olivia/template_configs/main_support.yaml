@@ -2,8 +2,9 @@ defaults:
 - data: zarr
 - dataloader: native_grid
 - diagnostics: evaluation
-- graph: limited_area # --> we can create the graph in another step: uncomment this and only add minimum needed under 'graph'
+- graph: limited_area
 - model: graphtransformer
+#- training: lam
 - override hydra/hydra_logging: disabled
 - override hydra/job_logging: disabled
 - override hydra/launcher: basic
@@ -11,6 +12,10 @@ defaults:
 
 config_validation: True
 
+# ============================================================================
+# SYSTEM SETTINGS - 8 NODES, 32 GPUS TOTAL
+# 8 model replicas (1 per node), each model split across 4 GPUs
+# ============================================================================
 system:
   # Hardware settings
   hardware:
@@ -22,9 +27,6 @@ system:
   # Input paths
   input:
     dataset: null
-    #dataset:
-      #dataset_main: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-      #dataset_force: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
     graph: /cluster/projects/nn12017k/graphs/LAM-trimedge-10-res-12-scale12.pt
     truncation: null
     truncation_inv: null
@@ -33,7 +35,7 @@ system:
 
   # Output structure
   output:
-    root: /cluster/projects/nn12017k/experiments/<replace-me>/
+    root: ./outputs/
     logs:
       root: logs
       wandb: wandb
@@ -47,6 +49,9 @@ system:
     plots: plots
     profiler: profiler
 
+# ============================================================================
+# DATA SETTINGS
+# ============================================================================
 data:
   frequency: 3h
   timestep: 3h
@@ -107,14 +112,17 @@ data:
         - sin_longitude
         - river_binary_mask
         - sea_mask
-      
+
+# ============================================================================
+# DATALOADER SETTINGS
+# ============================================================================
 dataloader:
   num_workers:
     training: 2
     validation: 2
     test: 2
-  batch_size: 
-    training: 1 
+  batch_size:
+    training: 1
     validation: 1
     test: 1
   read_group_size: 4
@@ -122,15 +130,7 @@ dataloader:
   limit_batches:
     training: null
     validation: null
-    test: 20 
-  
-  dataset:
-    join:
-      - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-        frequency: ${data.frequency}
-      - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
-        frequency: ${data.frequency}
-    adjust: ["start", "end"]
+    test: 20
 
   grid_indices:
     _target_: anemoi.training.data.grid_indices.MaskedGrid
@@ -138,30 +138,51 @@ dataloader:
     node_attribute_name: indices_connected_nodes
 
   training:
-    dataset: ${dataloader.dataset}
+    dataset:
+      join:
+        - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+          frequency: ${data.frequency}
+        - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+          frequency: ${data.frequency}
+      adjust: ["start", "end"]
     frequency: ${data.frequency}
     start: 2012-01-01
     end: 2022-06-30
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
-  validation_rollout: 1 # TODO change later
+  validation_rollout: 1
 
   validation:
-    dataset: ${dataloader.dataset}
+    dataset:
+      join:
+        - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+          frequency: ${data.frequency}
+        - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+          frequency: ${data.frequency}
+      adjust: ["start", "end"]
     frequency: ${data.frequency}
     start: 2022-07-01
     end: 2023-09-30
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
   test:
-    dataset: ${dataloader.dataset}
+    dataset:
+      join:
+        - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+          frequency: ${data.frequency}
+        - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+          frequency: ${data.frequency}
+      adjust: ["start", "end"]
     frequency: ${data.frequency}
     start: 2023-10-01
     end: 2024-12-31
     drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
 
+# ============================================================================
+# DIAGNOSTICS
+# ============================================================================
 diagnostics:
-  plot: 
+  plot:
     callbacks: []
   log:
     mlflow:
@@ -170,28 +191,34 @@ diagnostics:
       authentication: True
       tracking_uri: https://mlflow.ecmwf.int
       experiment_name: 'metno-fou'
-      run_name: '<replace-me>' #change this
-    wandb: 
+      run_name: <run name>
+    wandb:
       entity: null
   print_memory_summary: True
   checkpoint:
     every_n_minutes:
-      save_frequency: 30 # Approximate, as this is checked at the end of training steps
-      num_models_saved: 3 # If set to k, saves the 'last' k model weights in the training.
-  
+      save_frequency: 30
+      num_models_saved: 3
+
     every_n_epochs:
       save_frequency: 1
-      num_models_saved: -1 # If set to -1, all checkpoints are kept ensuring runs can be continued/forked at any point in the training process
-  
+      num_models_saved: -1
+
     every_n_train_steps:
-      save_frequency: 1000 # Does not scale with rollout
+      save_frequency: 1000
       num_models_saved: 5
 
+# ============================================================================
+# GRAPH
+# ============================================================================
 graph:
-  overwrite: False # only create/re-generate the graph with True
+  overwrite: False
 
-model: 
-  num_channels: 256 #1024 #TODO: this number dont have to be so large when have few vars, use higher nr when have more layers vars. Test to see if higher than 256 gives added value. Or higher when have less mesh points (remove land)
+# ============================================================================
+# MODEL
+# ============================================================================
+model:
+  num_channels: 512
   keep_batch_sharded: False
   encoder:
     num_chunks: 1
@@ -203,21 +230,16 @@ model:
     graph_attention_backend: "pyg"
   processor:
     graph_attention_backend: "pyg"
-  #-------
   trainable_parameters:
     data: 0
     hidden: 0
     data2hidden: 0
     hidden2data: 0
-    hidden2hidden: 0 # GNN and GraphTransformer Processor only
-  bounding: #These are applied in order
+    hidden2hidden: 0
+  bounding:
     - _target_: anemoi.models.layers.bounding.ReluBounding
-      variables: [] #[salinity_0]
-    #- _target_: anemoi.models.layers.bounding.NormalizedReluBounding
-    #  variables: [temperature_0]
-    #  min_val: [-2]
-    #  normalizer: ['mean-std']
-  output_mask: # suggested by lam.yaml
+      variables: []
+  output_mask:
     _target_: anemoi.training.utils.masks.Boolean1DMask
     nodes_name: ${graph.data}
     attribute_name: cutout_mask
@@ -313,4 +335,3 @@ training:
     rate: 6.25e-4
     iterations: ${training.max_steps}
     min: 3e-7
-

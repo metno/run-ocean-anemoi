@@ -2,7 +2,7 @@
 #SBATCH --account=nn12017k
 #SBATCH --job-name=<experiment_name>
 #SBATCH --partition=accel
-#SBATCH --nodes=4
+#SBATCH --nodes=8
 #SBATCH --ntasks-per-node=4
 #SBATCH --gpus-per-node=4
 #SBATCH --cpus-per-task=32
@@ -11,9 +11,9 @@
 #SBATCH --output=outputs/%x_%j.out
 #SBATCH --error=outputs/%x_%j.err
 
-# 4 Node 16 GPU Test
+# 8 Node 32 GPU
 echo "========================================"
-echo "4 Node 16 GPU Training Test"
+echo "8 Node 32 GPU Training"
 echo "========================================"
 echo "Job ID: $SLURM_JOB_ID"
 echo "Nodes: $SLURM_JOB_NUM_NODES"
@@ -65,7 +65,7 @@ export APPTAINERENV_NCCL_NCHANNELS_PER_NET_PEER=4
 #echo "Starting GPU utilization monitoring..."
 #nvidia-smi --query-gpu=timestamp,index,name,utilization.gpu,utilization.memory,memory.total,memory.used --format=csv -l 5 > $GPU_LOG_FILE &
 
-echo "Starting 4-node 16-GPU training..."
+echo "Starting 8-node 32-GPU training..."
 
 srun apptainer exec --nv \
     --bind $HOST_LIBFABRIC_LIB:/opt/libfabric/lib \
