@@ -60,6 +60,11 @@ export APPTAINERENV_NCCL_ASYNC_ERROR_HANDLING=1
 export APPTAINERENV_NCCL_BUFFSIZE=67108864
 export APPTAINERENV_NCCL_NCHANNELS_PER_NET_PEER=4
 
+# Anemoi seed (if under 1000 multiplies by 1000)
+# If none uses slurm job ID
+export ANEMOI_BASE_SEED=42
+export APPTAINERENV_ANEMOI_BASE_SEED=42
+
 # Start GPU utilization monitoring in the background
 #GPU_LOG_FILE="gpu_utilization.log"
 #echo "Starting GPU utilization monitoring..."
