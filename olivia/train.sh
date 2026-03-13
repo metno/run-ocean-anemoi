@@ -26,8 +26,9 @@ echo "========================================"
 SIF=/cluster/projects/nn12017k/container/anemoi-base.sif
 #SIF=/cluster/projects/nn12017k/container/anemoi-complete-arm64.sif
 CONFIG_NAME=main.yaml
-SQSH=$PWD/anemoi-env.sqsh
 
+rm core
+SQSH=$PWD/anemoi-env.sqsh
 
 # Host library paths
 HOST_LIBFABRIC_LIB=/opt/cray/libfabric/1.22.0/lib64
