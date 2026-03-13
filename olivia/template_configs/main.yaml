@@ -176,8 +176,8 @@ diagnostics:
   print_memory_summary: True
   checkpoint:
     every_n_minutes:
-      save_frequency: 30 # Approximate, as this is checked at the end of training steps
-      num_models_saved: 3 # If set to k, saves the 'last' k model weights in the training.
+      save_frequency: 60 # Approximate, as this is checked at the end of training steps
+      num_models_saved: 1 # If set to k, saves the 'last' k model weights in the training.
   
     every_n_epochs:
       save_frequency: 1
@@ -185,7 +185,7 @@ diagnostics:
   
     every_n_train_steps:
       save_frequency: 1000 # Does not scale with rollout
-      num_models_saved: 5
+      num_models_saved: 2
 
 graph:
   overwrite: False # only create/re-generate the graph with True
