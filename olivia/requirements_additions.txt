@@ -1,5 +1,8 @@
-anemoi-training==0.6.7
-anemoi-models==0.10.0
-anemoi-graphs==0.7.2
-anemoi-datasets==0.5.28
-trimesh==4.9.0
+anemoi-training==0.8.3
+anemoi-models==0.11.2
+anemoi-graphs==0.8.2
+anemoi-datasets==0.5.29
+anemoi-inference==0.8.3
+anemoi-transform==0.1.20
+anemoi-utils==0.4.41
+trimesh

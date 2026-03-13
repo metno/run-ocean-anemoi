@@ -23,9 +23,12 @@ echo "Total tasks: $SLURM_NTASKS"
 echo "GPUs per node: $SLURM_GPUS_ON_NODE"
 echo "========================================"
 
-SIF=/cluster/projects/nn12017k/container/anemoi-complete-arm64.sif
+SIF=/cluster/projects/nn12017k/container/anemoi-base.sif
+#SIF=/cluster/projects/nn12017k/container/anemoi-complete-arm64.sif
 CONFIG_NAME=main.yaml
+
 rm core
+SQSH=$PWD/anemoi-env.sqsh
 
 # Host library paths
 HOST_LIBFABRIC_LIB=/opt/cray/libfabric/1.22.0/lib64
@@ -51,6 +54,8 @@ export APPTAINERENV_MASTER_PORT=$MASTER_PORT
 export APPTAINERENV_PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 export APPTAINERENV_CUDA_DEVICE_ORDER=PCI_BUS_ID
 export APPTAINERENV_HYDRA_FULL_ERROR=1
+export APPTAINERENV_PREPEND_PATH=/user-software/bin
+
 
 # NCCL settings
 #export APPTAINERENV_NCCL_DEBUG=INFO
@@ -82,7 +87,7 @@ srun apptainer exec --nv \
     --bind /cluster/work/projects/nn12017k/ \
     --bind /cluster/projects/nn12017k/ \
     --bind $PWD \
-    $SIF \
+    --bind ${SQSH}:/user-software:image-src=/ $SIF \
     bash -c "
         # Set up library paths
         export LD_LIBRARY_PATH=/opt/libfabric/lib:/opt/nccl/lib:/opt/nvidia/hpc_sdk/lib:/usr/lib64:\$LD_LIBRARY_PATH
