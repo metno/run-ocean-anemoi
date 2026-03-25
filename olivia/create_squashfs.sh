@@ -15,7 +15,7 @@ echo "Started: $(date)"
 echo "========================================"
 
 # Set container path
-export SIF=/cluster/projects/nn12017k/container/pytorch_25.08-py3.sif
+export SIF=/cluster/projects/nn12017k/container/anemoi-base.sif
 
 echo ""
 echo "=== Step 1: Create virtual environment ==="
