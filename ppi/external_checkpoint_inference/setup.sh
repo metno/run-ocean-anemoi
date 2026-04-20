@@ -17,13 +17,10 @@ python3 -m venv $(pwd -P)/.venv
 
 source $(pwd -P)/.venv/bin/activate
 
-pip install anemoi-inference==0.8.0 # need this to run anemoi-inference inspect --requirements
+pip install anemoi-inference==0.10.1 # need this to run anemoi-inference inspect --requirements
 
 anemoi-inference inspect $CHECKPOINT --requirements > requirements.txt
 
-#pip install -r requirements.txt
-
 cat requirements.txt | xargs -n 1 pip install # run this to ignore on errors, e.g. amdsmi likes failing as it's some amd stuff, but isn't necessary for inference
 
-pip install --force-reinstall anemoi-inference==0.7.3 # For some reason the actual inference doesn't work with 0.8.0, so downgrading. Might find fix later. 
 
