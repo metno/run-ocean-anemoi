@@ -4,8 +4,12 @@ import sys
 
 
 def set_date_in_yaml(input_yaml, date):
-
-
+    '''
+        Updates the date in yaml file
+    Args:
+        input_yaml  [str]   :   name of yaml file
+        date        [str]   :   date string
+    '''
     yaml = ruamel.yaml.YAML()
     with open(input_yaml) as f:
         data = yaml.load(f)
