@@ -1,8 +1,8 @@
 checkpoint: <checkpoint>
 
-date: 2024-04-02 
+date: 2024-04-02
 
-lead_time: 48h 
+lead_time: 24h
 
 runner:
   external_graph:
@@ -11,12 +11,15 @@ runner:
 input:
   dataset:
     join:
-      - dataset: /lustre/storeB/project/fou/hi/foccus/datasets/norkystv3_hindcast_2012-2024.zarr
-        frequency: 3h
-      - dataset: /lustre/storeB/project/fou/hi/foccus/datasets/forcing_norkystv3_hindcast_zarr/forcing_norkystv3_hindcast_2012-2024.zarr
-        frequency: 3h
-    adjust: ["start", "end"]
+    - dataset: 
+        /lustre/storeB/project/fou/hi/foccus/datasets/norkystv3_hindcast_2012-2024.zarr
+      frequency: 3h
+    - dataset: 
+        /lustre/storeB/project/fou/hi/foccus/datasets/forcing_norkystv3_hindcast_zarr/forcing_norkystv3_hindcast_2012-2024.zarr
+      frequency: 3h
+    adjust: [start, end]
 
 output:
-  netcdf: <path-to-results>/temp.nc 
-  write_initial_state: false
+  netcdf:
+    path: <path-to-results>/temp.nc
+    write_initial_state: false
