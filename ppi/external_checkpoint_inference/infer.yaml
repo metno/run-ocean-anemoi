@@ -19,3 +19,4 @@ input:
 
 output:
   netcdf: <path-to-results>/temp.nc 
+  write_initial_state: false
