@@ -1,8 +1,8 @@
 checkpoint: <checkpoint>
 
-date: 2024-04-02 
+date: 2024-04-02
 
-lead_time: 48h 
+lead_time: 24h
 
 runner:
   external_graph:
@@ -11,45 +11,15 @@ runner:
 input:
   dataset:
     join:
-      - dataset: /lustre/storeB/project/fou/hi/foccus/datasets/norkystv3_hindcast_2012-2024.zarr
-        frequency: 3h
-      - dataset: /lustre/storeB/project/fou/hi/foccus/datasets/forcing_norkystv3_hindcast_zarr/forcing_norkystv3_hindcast_2012-2024.zarr
-        frequency: 3h
-    adjust: ["start", "end"]
+    - dataset: 
+        /lustre/storeB/project/fou/hi/foccus/datasets/norkystv3_hindcast_2012-2024.zarr
+      frequency: 3h
+    - dataset: 
+        /lustre/storeB/project/fou/hi/foccus/datasets/forcing_norkystv3_hindcast_zarr/forcing_norkystv3_hindcast_2012-2024.zarr
+      frequency: 3h
+    adjust: [start, end]
 
 output:
-  netcdf: <path-to-results>/temp.nc # the script postpro-inference.py will automatically rename and reshape this file
-
-# Or get only output on the lam area
-#output:
-#  extract_lam:
-#    output:
-#      netcdf:
-#        path: /lustre/storeB/project/fou/hi/foccus/ppi-experiments/inference-test/run-anemoi-ocean/ppi/lam-48h.nc
-
-#(inf_env) [mateuszm@sm-nx10080294-bq-compute ppi]$ anemoi-inference inspect --variables inference-anemoi-by_epoch-epoch_000-step_001892.ckpt 
-#   Pair              => forcing
-#   Qair              => forcing
-#   Tair              => forcing
-#   Uwind             => forcing
-#   Vwind             => forcing
-#   cos_julian_day    => computed, forcing
-#   cos_latitude      => computed, constant, forcing
-#   cos_local_time    => computed, forcing
-#   cos_longitude     => computed, constant, forcing
-#   f                 => constant, forcing
-#   h                 => constant, forcing
-#   insolation        => computed, forcing
-#   rain              => forcing
-#   river_binary_mask => constant, forcing
-#   salinity_0        => prognostic
-#   sea_mask          => constant, forcing
-#   sin_julian_day    => computed, forcing
-#   sin_latitude      => computed, constant, forcing
-#   sin_local_time    => computed, forcing
-#   sin_longitude     => computed, constant, forcing
-#   temperature_0     => prognostic
-#   u_eastward_0      => prognostic
-#   v_northward_0     => prognostic
-#   zeta              => prognostic
-#
+  netcdf:
+    path: <path-to-results>/temp.nc
+    write_initial_state: false
