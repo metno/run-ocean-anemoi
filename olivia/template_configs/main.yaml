@@ -23,8 +23,8 @@ system:
   input:
     dataset: null
     #dataset:
-      #dataset_main: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
-      #dataset_force: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+      #dataset_main: /cluster/work/projects/nn12017k/datasets/norkystv3_hindcast_2012-2024.zarr
+      #dataset_force: /cluster/work/projects/nn12017k/datasets/forcing_norkystv3_hindcast_2012-2024.zarr
     graph: /cluster/projects/nn12017k/graphs/LAM-trimedge-10-res-12-scale12.pt
     truncation: null
     truncation_inv: null
@@ -126,9 +126,9 @@ dataloader:
   
   dataset:
     join:
-      - dataset: /cluster/work/projects/nn12017k/datasets2/norkystv3_hindcast_2012-2024.zarr
+      - dataset: /cluster/work/projects/nn12017k/datasets/norkystv3_hindcast_2012-2024.zarr
         frequency: ${data.frequency}
-      - dataset: /cluster/work/projects/nn12017k/datasets2/forcing_norkystv3_hindcast_2012-2024.zarr
+      - dataset: /cluster/work/projects/nn12017k/datasets/forcing_norkystv3_hindcast_2012-2024.zarr
         frequency: ${data.frequency}
     adjust: ["start", "end"]
 
