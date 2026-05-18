@@ -23,7 +23,7 @@ def GetFilenamesFromYaml(yml, extract_lam=False):
         data = yaml.safe_load(file)
 
         if extract_lam is False:
-            orig_file = data['output']['netcdf']
+            orig_file = data['output']['netcdf']['path']
         elif extract_lam is True:
             orig_file = data['output']['extract_lam']['netcdf']['path']
 
