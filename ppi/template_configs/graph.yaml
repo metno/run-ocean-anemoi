@@ -24,8 +24,8 @@ nodes:
         masks:
           _target_: anemoi.graphs.nodes.attributes.CutOutMask
       area_weight:
-        _target_: anemoi.graphs.nodes.attributes.MaskedPlanarAreaWeights # options: Uniform
-        mask_node_attr_name: cutout_mask #---> this should work with anemoi.graphs.nodes.attributes.MaskedPlanarAreaWeights, but not here
+        _target_: anemoi.graphs.nodes.attributes.UniformWeights # options: Uniform
+        #mask_node_attr_name: cutout_mask #---> this should work with anemoi.graphs.nodes.attributes.MaskedPlanarAreaWeights, but not here
         norm: unit-max
   hidden:
     node_builder:
