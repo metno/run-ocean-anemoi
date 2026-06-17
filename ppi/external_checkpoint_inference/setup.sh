@@ -17,7 +17,7 @@ python3 -m venv $(pwd -P)/.venv
 
 source $(pwd -P)/.venv/bin/activate
 
-pip install anemoi-inference==0.10.1 # need this to run anemoi-inference inspect --requirements
+pip install anemoi-inference==0.11.0
 
 anemoi-inference inspect $CHECKPOINT --requirements > requirements.txt
 

@@ -4,10 +4,6 @@ date: 2024-04-02
 
 lead_time: 24h
 
-runner:
-  external_graph:
-    graph: /lustre/storeB/project/fou/hi/foccus/graphs/LAM-trimedge-10-res-12-scale12.pt
-
 input:
   dataset:
     join:
