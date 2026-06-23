@@ -17,7 +17,7 @@ python3 -m venv $(pwd -P)/.venv
 
 source $(pwd -P)/.venv/bin/activate
 
-pip install anemoi-inference==0.11.0
+pip install -e /lustre/storeB/project/fou/hi/foccus/anemoi-inference/. 
 
 anemoi-inference inspect $CHECKPOINT --requirements > requirements.txt
 
