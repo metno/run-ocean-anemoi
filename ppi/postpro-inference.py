@@ -4,6 +4,7 @@ import yaml
 import sys
 import os
 import re
+import argparse
 
 def GetFilenamesFromYaml(yml, extract_lam=False):
     '''
@@ -43,7 +44,7 @@ def GetFilenamesFromYaml(yml, extract_lam=False):
         
     return info_dict
 
-def InferenceTo2D(file, output=None, var_list=None, clean1D=True, grid_file = '/pfs/lustrep3/scratch/project_465002266/datasets/norkyst_grd_v31.nc'):
+def InferenceTo2D(file, output=None, var_list=None, clean1D=True, oslo=False, grid_file = '/pfs/lustrep3/scratch/project_465002266/datasets/norkyst_grd_v31.nc'):
     '''
         Function for reshaping 1D inference fields to 2D. Currently uses Norkyst grid file for this, meaning that the region size must be the safe as original Norkyst grid. 
         extract_lam in inference currently doesn't work with this. 
@@ -57,6 +58,9 @@ def InferenceTo2D(file, output=None, var_list=None, clean1D=True, grid_file = '/
     
     ds = xr.open_dataset(file)
     grid = xr.open_dataset(grid_file)
+
+    if oslo is True:
+        grid = grid.isel(xi_rho=slice(450, 780), eta_rho=slice(50, 330))
     time = ds["time"].values
 
     if np.issubdtype(time.dtype, np.datetime64):
@@ -99,6 +103,10 @@ def InferenceTo2D(file, output=None, var_list=None, clean1D=True, grid_file = '/
     new_ds.to_netcdf(output)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Reshape 1D inference fields to 2D.')
+    parser.add_argument('--yaml', type=str, help='Path to the inference yaml file.')
+    parser.add_argument('--oslo', action='store_true', help='If set, uses Oslo region of the grid.')
+    args = parser.parse_args()
     print('Now reshaping inference file.')
-    info_dict = GetFilenamesFromYaml(sys.argv[1])
-    InferenceTo2D(info_dict['orig_file'], info_dict['orig_file_path']+'/'+str(info_dict['convention_filename']), grid_file='/home/havis/sea/ROMS/metroms_apps/norkyst_v3/norkyst_oper/Run/Grid/norkyst_grd_v31.nc')
+    info_dict = GetFilenamesFromYaml(args.yaml)
+    InferenceTo2D(info_dict['orig_file'], info_dict['orig_file_path']+'/'+str(info_dict['convention_filename']), oslo=args.oslo, grid_file='/home/havis/sea/ROMS/metroms_apps/norkyst_v3/norkyst_oper/Run/Grid/norkyst_grd_v31.nc')
