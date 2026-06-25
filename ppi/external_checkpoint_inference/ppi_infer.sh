@@ -18,4 +18,4 @@ export HYDRA_FULL_ERROR=1
 ulimit -v unlimited
 anemoi-inference run $CONFIG_NAME
 
-python ../postpro-inference.py $CONFIG_NAME 
+python ../postpro-inference.py --yaml $CONFIG_NAME #--oslo 
