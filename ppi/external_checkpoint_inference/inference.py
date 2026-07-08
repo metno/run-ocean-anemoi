@@ -26,9 +26,22 @@ def set_date(input_yaml, date):
         yaml.dump(data, f)
 
 def set_checkpoint(input_yaml, checkpoint):
-    pass
+
+    yaml = ruamel.yaml.YAML()
+    with open(input_yaml) as f:
+        data = yaml.load(f)
     
-def inference(input_yaml, start, end, multi_checkpoint=False):
+    if 'checkpoint' in data:
+        if checkpoint is not None:
+            data['checkpoint'] = checkpoint
+        logger.info(f'Running inference for checkpoint: {data["checkpoint"]}')
+    else: 
+        raise ValueError(f'No key checkpoint found in {input_yaml}')
+    
+    with open(input_yaml, 'w') as f:
+        yaml.dump(data, f)
+    
+def inference(input_yaml, start, end, checkpoint_list=False):
     '''
         Runs inference for multiple dates.
     Args:
@@ -42,21 +55,37 @@ def inference(input_yaml, start, end, multi_checkpoint=False):
     end = datetime.strptime(end, '%Y-%m-%d') + timedelta(days=1) if end is not None else None #adding extra to include the last day
 
     times = np.arange(start, end, timedelta(days=1)).astype(datetime) if end is not None else np.array([start])
-    print(times)
+    
+    # getting times
+    if len(times) > 1:
+        logger.info(f'Running inference for dates between {start} - {end}.')
+    elif len(times) == 1:
+        logger.info(f'Running inference for {start}.')
+    
+    # getting checkpoints
+    checkpoints = []
+    if checkpoint_list:
+        logger.info('Running inference for checkpoints defined in checkpoint_list.csv')
+        with open('checkpoint_list.csv', 'r') as f:
+            lines = f.readlines()
+            if len(lines) == 0:
+                logger.warning('No checkpoints found in checkpoint_list.csv')
+            for ckpt in lines:
+                checkpoints.append(ckpt.strip())
 
-    if multi_checkpoint:
-        logger.info('Running inference for multiple checkpoints defined in experiment_list.xml')
+    if len(checkpoints) == 0:
+        logger.info('Using checkpoint defined in yaml file')
+        checkpoints = [None]
 
-    logger.info(f'Running inference for dates between {start} - {end}.')
+    for checkpoint in checkpoints:
+        set_checkpoint(input_yaml, checkpoint)
+        for time in times:
+            date = f'{time.year}-{time.month:02d}-{time.day:02d}'
+            logger.info(f'Starting inference for {date}')
+            set_date(input_yaml, date)
 
-    for time in times:
-        date = f'{time.year}-{time.month:02d}-{time.day:02d}'
-        logger.info(f'Starting inference for {date}')
-        set_date(input_yaml, date)
-        
-        #os.system(f'anemoi-inference run {input_yaml}')
-        #os.system(f'python ../postpro-inference.py {input_yaml}')
-
+            os.system(f'anemoi-inference run {input_yaml}')
+            os.system(f'python ../postpro-inference.py {input_yaml}')
 
 if __name__ == '__main__':
     import argparse
@@ -73,7 +102,7 @@ if __name__ == '__main__':
         '-e', '--end', type=str, required=False, help='End date, Y-m-d'
     )
     parser.add_argument(
-        '-mc', '--multi_checkpoint', action='store_true', help='Flag to run multiple inferences from checkpoints defined in checkpoint_list.xml'
+        '-cl', '--checkpoint_list', action='store_true', help='Flag to run multiple inferences from checkpoints defined in checkpoint_list.csv'
     )
     args = parser.parse_args()
 
@@ -81,5 +110,5 @@ if __name__ == '__main__':
         input_yaml=args.file,
         start=args.start,
         end=args.end,
-        multi_checkpoint=args.multi_checkpoint
+        checkpoint_list=args.checkpoint_list
     )
