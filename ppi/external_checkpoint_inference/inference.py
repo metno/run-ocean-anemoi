@@ -24,8 +24,11 @@ def set_date(input_yaml, date):
     
     with open(input_yaml, 'w') as f:
         yaml.dump(data, f)
+
+def set_checkpoint(input_yaml, checkpoint):
+    pass
     
-def inference(input_yaml, start, end):
+def inference(input_yaml, start, end, multi_checkpoint=False):
     '''
         Runs inference for multiple dates.
     Args:
@@ -34,9 +37,16 @@ def inference(input_yaml, start, end):
         end         [str]   :   end time
     '''
     logging.basicConfig(level=logging.INFO)
-    start =  datetime.strptime(start, '%Y-%m-%d')
-    end = datetime.strptime(end, '%Y-%m-%d') + timedelta(days=1) #adding extra to include the last day
-    times = np.arange(start, end, timedelta(days=1)).astype(datetime)
+
+    start = datetime.strptime(start, '%Y-%m-%d')
+    end = datetime.strptime(end, '%Y-%m-%d') + timedelta(days=1) if end is not None else None #adding extra to include the last day
+
+    times = np.arange(start, end, timedelta(days=1)).astype(datetime) if end is not None else np.array([start])
+    print(times)
+
+    if multi_checkpoint:
+        logger.info('Running inference for multiple checkpoints defined in experiment_list.xml')
+
     logger.info(f'Running inference for dates between {start} - {end}.')
 
     for time in times:
@@ -44,28 +54,32 @@ def inference(input_yaml, start, end):
         logger.info(f'Starting inference for {date}')
         set_date(input_yaml, date)
         
-        os.system(f'anemoi-inference run {input_yaml}')
-        os.system(f'python ../postpro-inference.py {input_yaml}')
+        #os.system(f'anemoi-inference run {input_yaml}')
+        #os.system(f'python ../postpro-inference.py {input_yaml}')
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(
-        prog='long inference'
+        prog='multi inference'
     )
     parser.add_argument(
         '-f', '--file', type=str, required=True, help='Input yaml file'   
     )
     parser.add_argument(
-        '-s', '--start', type=str, required=True, help='Start date, %Y-%m-%d'
+        '-s', '--start', type=str, required=True, help='Start date, Y-m-d'
     )
     parser.add_argument(
-        '-e', '--end', type=str, required=True, help='End date, %Y-%m-%d'
+        '-e', '--end', type=str, required=False, help='End date, Y-m-d'
+    )
+    parser.add_argument(
+        '-mc', '--multi_checkpoint', action='store_true', help='Flag to run multiple inferences from checkpoints defined in checkpoint_list.xml'
     )
     args = parser.parse_args()
 
     inference(
         input_yaml=args.file,
         start=args.start,
-        end=args.end
+        end=args.end,
+        multi_checkpoint=args.multi_checkpoint
     )
