@@ -8,7 +8,7 @@
 #SBATCH --mem=80G
 #SBATCH --ntasks-per-node=1
 
-source $(pwd -P)/.venv/bin/activate
+source /lustre/storeB/project/fou/hi/foccus/python-envs/inference-env-jun26/bin/activate
 
 CONFIG_DIR=$(pwd -P)/
 CONFIG_NAME=$CONFIG_DIR/infer.yaml
@@ -16,4 +16,4 @@ CONFIG_NAME=$CONFIG_DIR/infer.yaml
 export HYDRA_FULL_ERROR=1
 
 ulimit -v unlimited
-python inference.py -f $CONFIG_NAME -s '2024-04-10' -e '2024-04-12'
+python inference.py -f $CONFIG_NAME -s '2024-04-10' -e '2024-04-13' -cl #--oslo

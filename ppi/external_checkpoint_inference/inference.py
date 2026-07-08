@@ -26,6 +26,12 @@ def set_date(input_yaml, date):
         yaml.dump(data, f)
 
 def set_checkpoint(input_yaml, checkpoint):
+    '''
+        Updates the checkpoint in yaml file
+    Args:
+        input_yaml  [str]   :   name of yaml file
+        checkpoint  [str]   :   checkpoint string
+    '''
 
     yaml = ruamel.yaml.YAML()
     with open(input_yaml) as f:
@@ -41,13 +47,15 @@ def set_checkpoint(input_yaml, checkpoint):
     with open(input_yaml, 'w') as f:
         yaml.dump(data, f)
     
-def inference(input_yaml, start, end, checkpoint_list=False):
+def inference(input_yaml, start, end, checkpoint_list=False, oslo=False):
     '''
         Runs inference for multiple dates.
     Args:
-        input_yaml  [str]   :   name of yaml file   
-        start       [str]   :   start time 
-        end         [str]   :   end time
+        input_yaml          [str]   :   name of yaml file   
+        start               [str]   :   start time 
+        end                 [str]   :   end time
+        checkpoint_list     [bool]  :   flag to run multiple inferences from checkpoints defined in checkpoint_list.csv
+        oslo                [bool]   :   flag to indicate Oslofjord domain
     '''
     logging.basicConfig(level=logging.INFO)
 
@@ -77,6 +85,7 @@ def inference(input_yaml, start, end, checkpoint_list=False):
         logger.info('Using checkpoint defined in yaml file')
         checkpoints = [None]
 
+    # run inference and postprocessing for each checkpoint and date
     for checkpoint in checkpoints:
         set_checkpoint(input_yaml, checkpoint)
         for time in times:
@@ -85,8 +94,11 @@ def inference(input_yaml, start, end, checkpoint_list=False):
             set_date(input_yaml, date)
 
             os.system(f'anemoi-inference run {input_yaml}')
-            os.system(f'python ../postpro-inference.py {input_yaml}')
-
+            logger.info(f'Inference completed for {date}')
+            logger.info(f'Starting postprocessing for {date}')
+            os.system(f'python ../postpro-inference.py --yaml {input_yaml} {"--oslo" if oslo else ""}')
+            logger.info(f'Postprocessing completed for {date}')
+            
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(
@@ -104,11 +116,15 @@ if __name__ == '__main__':
     parser.add_argument(
         '-cl', '--checkpoint_list', action='store_true', help='Flag to run multiple inferences from checkpoints defined in checkpoint_list.csv'
     )
+    parser.add_argument(
+        '-o', '--oslo', action='store_true', help='Flag to indicate Oslofjord domain'
+    )
     args = parser.parse_args()
 
     inference(
         input_yaml=args.file,
         start=args.start,
         end=args.end,
-        checkpoint_list=args.checkpoint_list
+        checkpoint_list=args.checkpoint_list,
+        oslo=args.oslo
     )
