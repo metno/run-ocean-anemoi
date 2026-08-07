@@ -111,7 +111,7 @@ if __name__ == '__main__':
         '-s', '--start', type=str, required=True, help='Start date, Y-m-d'
     )
     parser.add_argument(
-        '-e', '--end', type=str, required=False, help='End date, Y-m-d'
+        '-e', '--end', type=str, default=None, required=False, help='End date, Y-m-d'
     )
     parser.add_argument(
         '-cl', '--checkpoint_list', action='store_true', help='Flag to run multiple inferences from checkpoints defined in checkpoint_list.csv'
