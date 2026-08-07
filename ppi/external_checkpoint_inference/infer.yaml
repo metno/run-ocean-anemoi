@@ -19,7 +19,7 @@ input:
     - dataset: 
         /lustre/storeB/project/fou/hi/foccus/datasets/forcing_norkystv3_hindcast_zarr/forcing_norkystv3_hindcast_2012-2024.zarr
       frequency: 3h
-    #trim_edge: [50, 818, 450, 1967] enable for oslofjorden domains. Whacky solution
+    #trim_edge: [50, 818, 450, 1967] #enable for oslofjorden domains. Whacky solution
     adjust: [start, end]
 
 output:
