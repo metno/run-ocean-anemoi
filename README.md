@@ -46,13 +46,13 @@ sbatch ppi_infer.sh
 ```
 
 ## long_infer.sh
-This script runs the inference.py script with arguments. The inference.py script is made to quickly run multiple inferences from different checkpoints or dates. 
--s: gives start date
--e: gives end date
--cl: use checkpoints provided in the checkpoint_list.csv. 
-Inference.py edits the dates and checkpoint values in the infer.yaml file. Everything else must is kept as is. 
-For the oslofjorden experiments, a different regrid is necessary in the postpro-inference.py script. Use the --oslo argument in long_infer.sh. 
-Also, for oslofjorden experiments, uncomment the commented lines in infer.yaml, and provide the correct graph. 
+This script runs the inference.py script with arguments. The inference.py script is made to quickly run multiple inferences from different checkpoints or dates.\
+-s: gives start date\
+-e: gives end date\
+-cl: use checkpoints provided in the checkpoint_list.csv.\ 
+Inference.py edits the dates and checkpoint values in the infer.yaml file. Everything else must is kept as is.\ 
+For the oslofjorden experiments, a different regrid is necessary in the postpro-inference.py script. Use the --oslo argument in long_infer.sh.\ 
+Also, for oslofjorden experiments, uncomment the commented lines in infer.yaml, and provide the correct graph.\
 
 ### [UPDATE THIS] Creating a new enviroment to use on PPI GPU:
 Then get mamba/conda:
