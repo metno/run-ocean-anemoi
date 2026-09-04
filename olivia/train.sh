@@ -31,11 +31,17 @@ rm core
 SQSH=$PWD/anemoi-env.sqsh
 
 # Host library paths
-HOST_LIBFABRIC_LIB=/opt/cray/libfabric/1.22.0/lib64
-HOST_LIBFABRIC_INC=/opt/cray/libfabric/1.22.0/include
-HOST_NCCL=/cluster/work/support/nccl
-HOST_NVIDIA_HPC=/opt/nvidia/hpc_sdk/Linux_aarch64/24.11/compilers/lib
-HOST_CXI=/usr/lib64
+#HOST_LIBFABRIC_LIB=/opt/cray/libfabric/1.22.0/lib64
+#HOST_LIBFABRIC_INC=/opt/cray/libfabric/1.22.0/include
+#HOST_NCCL=/cluster/work/support/nccl
+#HOST_NVIDIA_HPC=/opt/nvidia/hpc_sdk/Linux_aarch64/24.11/compilers/lib
+#HOST_CXI=/usr/lib64
+
+HOST_LIBFABRIC_LIB="/cluster/software/NRIS/neoverse_v2/software/libfabric/2.3.1-GCCcore-14.3.0-CUDA-13.0.0/lib"
+HOST_AWSOFI_LIB="/cluster/software/NRIS/neoverse_v2/software/aws-ofi-nccl/1.19.1-GCCcore-14.3.0-CUDA-13.0.0/lib"
+HOST_CXI_LIB_PATH="/usr/lib64"
+
+
 
 # Get head node IP
 nodes=( $(scontrol show hostnames $SLURM_JOB_NODELIST) )
@@ -59,12 +65,12 @@ export APPTAINERENV_PREPEND_PATH=/user-software/bin
 
 # NCCL settings
 #export APPTAINERENV_NCCL_DEBUG=INFO
-export APPTAINERENV_NCCL_SOCKET_IFNAME=hsn0,hsn1,hsn2,hsn3
-export APPTAINERENV_NCCL_NET_GDR_LEVEL=PHB
-export APPTAINERENV_NCCL_P2P_DISABLE=0
-export APPTAINERENV_TORCH_NCCL_ASYNC_ERROR_HANDLING=1
-export APPTAINERENV_NCCL_BUFFSIZE=67108864
-export APPTAINERENV_NCCL_NCHANNELS_PER_NET_PEER=4
+#export APPTAINERENV_NCCL_SOCKET_IFNAME=hsn0,hsn1,hsn2,hsn3
+#export APPTAINERENV_NCCL_NET_GDR_LEVEL=PHB
+#export APPTAINERENV_NCCL_P2P_DISABLE=0
+#export APPTAINERENV_TORCH_NCCL_ASYNC_ERROR_HANDLING=1
+#export APPTAINERENV_NCCL_BUFFSIZE=67108864
+#export APPTAINERENV_NCCL_NCHANNELS_PER_NET_PEER=4
 
 # Anemoi seed (if under 1000 multiplies by 1000)
 # If none uses slurm job ID
@@ -80,20 +86,16 @@ echo "Starting 8-node 32-GPU training..."
 
 srun apptainer exec --nv \
     --bind $HOST_LIBFABRIC_LIB:/opt/libfabric/lib \
-    --bind $HOST_LIBFABRIC_INC:/opt/libfabric/include \
-    --bind $HOST_NCCL:/opt/nccl \
-    --bind $HOST_CXI:/usr/lib64 \
-    --bind $HOST_NVIDIA_HPC:/opt/nvidia/hpc_sdk/lib \
+    --bind $HOST_AWSOFI_LIB:/opt/aws-ofi-nccl/lib \
+    --bind $HOST_CXI_LIB_PATH:/usr/lib64 \
     --bind /cluster/work/projects/nn12017k/ \
     --bind /cluster/projects/nn12017k/ \
     --bind $PWD \
     --bind ${SQSH}:/user-software:image-src=/ $SIF \
     bash -c "
         # Set up library paths
-        export LD_LIBRARY_PATH=/opt/libfabric/lib:/opt/nccl/lib:/opt/nvidia/hpc_sdk/lib:/usr/lib64:\$LD_LIBRARY_PATH
-        export CPATH=/opt/libfabric/include:\$CPATH
-
-        # Symbolic link for CUDA compatibility
+        export LD_LIBRARY_PATH=/opt/aws-ofi-nccl/lib:/opt/libfabric/lib:/usr/lib64:$LD_LIBRARY_PATH; 
+        # Symbolic link for CUDA compatibility (I am not sure about this line below/try commenting out and see if it runs)
         ln -sf /usr/local/cuda/compat/lib/libcuda.so.1 /usr/local/cuda/compat/lib/libcuda.so 2>/dev/null || true
 
         # Set up distributed training environment
