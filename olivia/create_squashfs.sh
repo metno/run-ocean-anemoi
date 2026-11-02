@@ -9,38 +9,53 @@
 #SBATCH --job-name=create_squashfs
 #SBATCH --output=outputs/create_squashfs_%j.out
 
+set -euo pipefail
+
 echo "========================================"
 echo "Creating SquashFS Python Environment"
 echo "Started: $(date)"
 echo "========================================"
 
-# Set container path
 export SIF=/cluster/projects/nn12017k/container/anemoi-base.sif
+
+if [[ ! -f "$SIF" ]]; then
+    echo "ERROR: Container image not found: $SIF" >&2
+    exit 1
+fi
+
+if [[ -e anemoi-env ]]; then
+    echo "ERROR: anemoi-env already exists; refusing to reuse or overwrite it." >&2
+    exit 1
+fi
 
 echo ""
 echo "=== Step 1: Create virtual environment ==="
-apptainer exec --bind $PWD $SIF bash -c "python -m venv anemoi-env --system-site-packages"
+apptainer exec --bind "$PWD" "$SIF" python -m venv anemoi-env --system-site-packages
 
 echo ""
 echo "=== Step 2: Install packages (10-20 min) ==="
-apptainer exec --bind $PWD $SIF bash -c "source anemoi-env/bin/activate && pip install -q -r requirements_additions.txt"
+apptainer exec --bind "$PWD" "$SIF" \
+    bash -c 'source anemoi-env/bin/activate && python -m pip install -r requirements_additions.txt'
 
 echo ""
 echo "=== Step 3: Test environment ==="
-apptainer exec --bind $PWD $SIF bash -c "source anemoi-env/bin/activate && python test_imports.py"
+apptainer exec --bind "$PWD" "$SIF" \
+    bash -c 'source anemoi-env/bin/activate && python test_imports.py'
 
 echo ""
 echo "=== Step 4: Create squashfs file ==="
-mksquashfs anemoi-env anemoi-env.sqsh -noappend -no-progress
+mksquashfs anemoi-env anemoi-env.sqsh -noappend -no-progress -no-xattrs
+test -s anemoi-env.sqsh
 
 echo ""
-echo "=== Step 5: Remove venv directory ==="
+echo "=== Step 5: Test squashfs environment ==="
+apptainer exec -B "$PWD" \
+    -B "$PWD/anemoi-env.sqsh:/user-software:image-src=/" "$SIF" \
+    /user-software/bin/python test_imports.py
+
+echo ""
+echo "=== Step 6: Remove virtual environment directory ==="
 rm -rf anemoi-env
-
-echo ""
-echo "=== Step 6: Test squashfs environment ==="
-export APPTAINERENV_PREPEND_PATH=/user-software/bin
-apptainer exec -B $PWD -B anemoi-env.sqsh:/user-software:image-src=/ $SIF bash -c "source /user-software/bin/activate && python test_imports.py"
 
 echo ""
 echo "========================================"
