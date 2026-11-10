@@ -208,6 +208,7 @@ graph:
   overwrite: False # only create/re-generate the graph with True
 
 model: 
+  recompile_limit: 32
   num_channels: 512 #1024 #TODO: this number dont have to be so large when have few vars, use higher nr when have more layers vars. Test to see if higher than 256 gives added value. Or higher when have less mesh points (remove land)
   keep_batch_sharded: True
   encoders:
@@ -363,7 +364,6 @@ training:
   #----------------------------
   # Using defaults from lam.yaml
   submodules_to_freeze: []
-  recompile_limit: 32
   #----------------------------
   optimization:
     optimizer:  
@@ -380,11 +380,7 @@ training:
       warmup_t: 1000
       t_in_epochs: false # t_initial and warmup_t are in steps, not epochs (matches interval: step)
 
-  swa:
-    enabled: False
-    lr: 1.e-4
-  #weight_averaging: null
-
+  weight_averaging: null
   max_epochs: null
   max_steps: 220000
 
