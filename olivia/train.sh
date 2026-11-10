@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=nn12017k
-#SBATCH --job-name=<experiment_name>
+#SBATCH --job-name=overfitting
 #SBATCH --partition=accel
 #SBATCH --nodes=8
 #SBATCH --ntasks-per-node=4
@@ -11,9 +11,9 @@
 #SBATCH --output=outputs/%x_%j.out
 #SBATCH --error=outputs/%x_%j.err
 
-# 8 Node 32 GPU
+# 8 Nodes 32 GPU
 echo "========================================"
-echo "8 Node 32 GPU Training"
+echo "8 Nodes 32 GPU Training"
 echo "========================================"
 echo "Job ID: $SLURM_JOB_ID"
 echo "Nodes: $SLURM_JOB_NUM_NODES"
@@ -23,7 +23,7 @@ echo "Total tasks: $SLURM_NTASKS"
 echo "GPUs per node: $SLURM_GPUS_ON_NODE"
 echo "========================================"
 
-SIF=/cluster/projects/nn12017k/container/anemoi-base.sif
+SIF=/cluster/projects/nn12017k/container/pytorch_nvidia_25.06_arm64.sif
 #SIF=/cluster/projects/nn12017k/container/anemoi-complete-arm64.sif
 CONFIG_NAME=main.yaml
 
