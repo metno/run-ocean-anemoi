@@ -231,8 +231,10 @@ model:
     hidden2data: 0
     hidden2hidden: 0 # GNN and GraphTransformer Processor only
   bounding: #These are applied in order
-    - _target_: anemoi.models.layers.bounding.ReluBounding
-      variables: [] #[salinity_0]
+    datasets:
+      data:
+        - _target_: anemoi.models.layers.bounding.ReluBounding
+          variables: [] #[salinity_0]
     #- _target_: anemoi.models.layers.bounding.NormalizedReluBounding
     #  variables: [temperature_0]
     #  min_val: [-2]

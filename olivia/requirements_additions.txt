@@ -1,4 +1,4 @@
-anemoi-training==0.17.1
+anemoi-training[plotting]==0.17.1
 anemoi-models==0.19.0
 anemoi-graphs==0.9.8
 anemoi-datasets==0.5.49
