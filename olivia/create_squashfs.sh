@@ -16,7 +16,7 @@ echo "Creating SquashFS Python Environment"
 echo "Started: $(date)"
 echo "========================================"
 
-export SIF=/cluster/projects/nn12017k/container/anemoi-base.sif
+export SIF=/cluster/projects/nn12017k/container/pytorch_nvidia_25.06_arm64.sif
 
 if [[ ! -f "$SIF" ]]; then
     echo "ERROR: Container image not found: $SIF" >&2
@@ -35,7 +35,7 @@ apptainer exec --bind "$PWD" "$SIF" python -m venv anemoi-env --system-site-pack
 echo ""
 echo "=== Step 2: Install packages (10-20 min) ==="
 apptainer exec --bind "$PWD" "$SIF" \
-    bash -c 'source anemoi-env/bin/activate && python -m pip install -r requirements_additions.txt'
+    bash -c 'source anemoi-env/bin/activate && unset PIP_CONSTRAINT && python -m pip install -r requirements_additions.txt'
 
 echo ""
 echo "=== Step 3: Test environment ==="
