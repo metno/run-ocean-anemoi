@@ -294,7 +294,6 @@ training:
   loss_gradient_scaling: False
 
   # loss function for the model
-training:
   training_loss:
     datasets:
       data:
