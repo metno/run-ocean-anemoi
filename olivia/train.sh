@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=nn12017k
-#SBATCH --job-name=overfitting
+#SBATCH --job-name=<experiment_name>
 #SBATCH --partition=accel
 #SBATCH --nodes=8
 #SBATCH --ntasks-per-node=4
@@ -11,9 +11,9 @@
 #SBATCH --output=outputs/%x_%j.out
 #SBATCH --error=outputs/%x_%j.err
 
-# 8 Nodes 32 GPU
+# 8 Node 32 GPU
 echo "========================================"
-echo "8 Nodes 32 GPU Training"
+echo "8 Node 32 GPU Training"
 echo "========================================"
 echo "Job ID: $SLURM_JOB_ID"
 echo "Nodes: $SLURM_JOB_NUM_NODES"
