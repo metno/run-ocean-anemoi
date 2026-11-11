@@ -145,7 +145,6 @@ dataloader:
           drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
         start: 2012-01-01
         end: 2022-06-30
-        trajectory: ${dataloader.model_run_info}
 
   validation_rollout: 1 # TODO change later
 
@@ -158,7 +157,6 @@ dataloader:
           drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
         start: 2022-07-01
         end: 2023-09-30
-        trajectory: ${dataloader.model_run_info}
 
   test:
     datasets:
@@ -169,7 +167,6 @@ dataloader:
           drop: ['vbar_northward', 'ubar_eastward', 'Uwind_eastward', 'Vwind_northward']
         start: 2023-10-01
         end: 2024-12-31
-        trajectory: ${dataloader.model_run_info}
 
 diagnostics:
   plot: 
@@ -211,36 +208,47 @@ graph:
   overwrite: False # only create/re-generate the graph with True
 
 model: 
+  compile: []
+  recompile_limit: 32
   num_channels: 512 #1024 #TODO: this number dont have to be so large when have few vars, use higher nr when have more layers vars. Test to see if higher than 256 gives added value. Or higher when have less mesh points (remove land)
   keep_batch_sharded: True
-  encoder:
-    num_chunks: 1
-    shard_strategy: "heads"
-    graph_attention_backend: "pyg"
-  decoder:
-    num_chunks: 1
-    shard_strategy: "heads"
-    graph_attention_backend: "pyg"
+  encoders:
+    "0":
+      mapper:
+        num_chunks: 1
+        shard_strategy: heads
+        graph_attention_backend: pyg
+  decoders:
+    "0":
+      mapper:
+        num_chunks: 1
+        shard_strategy: heads
+        graph_attention_backend: pyg
   processor:
     graph_attention_backend: "pyg"
   #-------
-  trainable_parameters:
+  node_trainable_parameters:
     data: 0
     hidden: 0
+
+  edge_trainable_parameters:
     data2hidden: 0
     hidden2data: 0
     hidden2hidden: 0 # GNN and GraphTransformer Processor only
   bounding: #These are applied in order
-    - _target_: anemoi.models.layers.bounding.ReluBounding
-      variables: [] #[salinity_0]
+    datasets:
+      data:
+        - _target_: anemoi.models.layers.bounding.ReluBounding
+          variables: [] #[salinity_0]
     #- _target_: anemoi.models.layers.bounding.NormalizedReluBounding
     #  variables: [temperature_0]
     #  min_val: [-2]
     #  normalizer: ['mean-std']
-  output_mask: # suggested by lam.yaml
-    _target_: anemoi.training.utils.masks.Boolean1DMask
-    #nodes_name: ${graph.data}
-    attribute_name: cutout_mask
+  output_mask:
+    datasets:
+      data:
+        _target_: anemoi.training.utils.masks.Boolean1DMask
+        attribute_name: cutout_mask
 
 # ============================================================================
 # TRAINING - adding all from lam.yaml "manually" to turn off tendency scalers
@@ -272,7 +280,8 @@ training:
   # Optimizer settings
 
   # select model
-  training_method: anemoi.training.train.methods.SingleTraining
+  method:
+    _target_: anemoi.training.train.methods.SingleTraining
 
   # select strategy
   strategy:
@@ -290,14 +299,13 @@ training:
   # loss function for the model
   training_loss:
     datasets:
-      data: # user-defined key in data
-        # loss class to initialise
+      data:
         _target_: anemoi.training.losses.MSELoss
-        # Scalers to include in loss calculation
-        # A selection of available scalers are listed in training/scalers/scalers.yaml
-        # '*' is a valid entry to use all `scalers` given, if a scaler is to be excluded
-        # add `!scaler_name`, i.e. ['*', '!scaler_1'], and `scaler_1` will not be added.
-        scalers: ['general_variable', 'node_weights', 'time_steps']
+        scalers:
+          - general_variable
+          - node_weights
+          - time_steps
+          - limited_area_mask
         ignore_nans: False
 
   # Validation metrics calculation,
@@ -307,17 +315,13 @@ training:
   # have undergone postprocessing.
   validation_metrics:
     datasets:
-      data: # user-defined key in data
-        # loss class to initialise
+      data:
         mse_inside_lam:
           _target_: anemoi.training.losses.MSELoss
-          # Scalers to include in loss calculation
-          # Cannot scale over the variable dimension due to possible remappings.
-          # Available scalers include:
-          # - 'loss_weights_mask': Giving imputed NaNs a zero weight in the loss function
-          # Use the `scale_validation_metrics` section to variable scale.
-          scalers: ["node_weights", "time_steps"]
-          # other kwargs
+          scalers:
+            - node_weights
+            - time_steps
+            - limited_area_mask
           ignore_nans: True
   #----------------------------
 
@@ -361,7 +365,6 @@ training:
   #----------------------------
   # Using defaults from lam.yaml
   submodules_to_freeze: []
-  recompile_limit: 32
   #----------------------------
   optimization:
     optimizer:  
@@ -378,11 +381,7 @@ training:
       warmup_t: 1000
       t_in_epochs: false # t_initial and warmup_t are in steps, not epochs (matches interval: step)
 
-  swa:
-    enabled: False
-    lr: 1.e-4
-  #weight_averaging: null
-
+  weight_averaging: null
   max_epochs: null
   max_steps: 220000
 

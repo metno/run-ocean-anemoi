@@ -23,7 +23,7 @@ echo "Total tasks: $SLURM_NTASKS"
 echo "GPUs per node: $SLURM_GPUS_ON_NODE"
 echo "========================================"
 
-SIF=/cluster/projects/nn12017k/container/anemoi-base.sif
+SIF=/cluster/projects/nn12017k/container/pytorch_nvidia_25.06_arm64.sif
 #SIF=/cluster/projects/nn12017k/container/anemoi-complete-arm64.sif
 CONFIG_NAME=main.yaml
 
@@ -61,6 +61,7 @@ export APPTAINERENV_PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 export APPTAINERENV_CUDA_DEVICE_ORDER=PCI_BUS_ID
 export APPTAINERENV_HYDRA_FULL_ERROR=1
 export APPTAINERENV_PREPEND_PATH=/user-software/bin
+export APPTAINERENV_ANEMOI_DATASETS_MISSING_DATES_FIX_EXPERIMENTAL=1
 
 
 # NCCL settings
@@ -76,6 +77,7 @@ export APPTAINERENV_PREPEND_PATH=/user-software/bin
 # If none uses slurm job ID
 export ANEMOI_BASE_SEED=42
 export APPTAINERENV_ANEMOI_BASE_SEED=42
+export APPTAINERENV_MLFLOW_ALLOW_FILE_STORE=true
 
 # Start GPU utilization monitoring in the background
 #GPU_LOG_FILE="gpu_utilization.log"
