@@ -47,6 +47,8 @@ sys.path.insert(0, script_dir)
 print(f"[Rank {local_rank}] About to import anemoi_graph_patch...", flush=True)
 import anemoi_graph_patch
 print(f"[Rank {local_rank}] anemoi_graph_patch imported", flush=True)
+import anemoi_missing_dates_patch
+print(f"[Rank {local_rank}] anemoi_missing_dates_patch imported", flush=True)
 
 # Check CUDA state before importing anemoi
 if world_size > 1:
