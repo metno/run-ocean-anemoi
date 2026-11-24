@@ -15,10 +15,12 @@ print(f"✓ anemoi.models     v{anemoi.models.__version__}")
 print(f"✓ anemoi.graphs     v{anemoi.graphs.__version__}")
 
 # Test PyTorch and GPUs
+import numpy as np
 import torch
 print()
 print(f"✓ PyTorch v{torch.__version__}")
 print(f"✓ CUDA available: {torch.cuda.is_available()}")
+torch.from_numpy(np.zeros(1))
 if torch.cuda.is_available():
     print(f"✓ GPUs detected: {torch.cuda.device_count()}x {torch.cuda.get_device_name(0)}")
 

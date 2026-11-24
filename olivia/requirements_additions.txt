@@ -1,8 +1,9 @@
-anemoi-training==0.12.1
-anemoi-models==0.14.1
-anemoi-graphs==0.9.3
-anemoi-datasets==0.5.36
-anemoi-inference==0.8.3
-anemoi-transform==0.3.1
-anemoi-utils==0.5.3
+anemoi-training[plotting]==0.17.1
+anemoi-models==0.19.0
+anemoi-graphs==0.9.8
+anemoi-datasets==0.5.49
+anemoi-inference==0.13.0
+anemoi-transform==0.5.1
+anemoi-utils==0.5.14
 trimesh
+numpy<2
